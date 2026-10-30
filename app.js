@@ -4,7 +4,7 @@ particles();
 let cats = [], prods = [], cat = 0, user = null;
 const U = { hour: 'hour', day: 'day', month: 'month' };
 async function load() {
-  const [c, p] = await Promise.all([sb.from('categories').select('*').order('sort'), sb.from('products').select('*,plans(*)').order('created_at', { ascending: false })]);
+  const [c, p] = await Promise.all([sb.from('categories').select('*').order('sort'), sb.from('products').select('*,plans(*)').eq('published', true).order('created_at', { ascending: false })]);
   if (c.error || p.error) return toast('Could not load products. Check config.js.');
   cats = c.data; prods = p.data; chips(); draw();
 }
