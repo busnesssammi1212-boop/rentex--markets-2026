@@ -28,7 +28,8 @@ const V = {
     $('#v').onclick = async e => { const b = e.target.closest('[data-a]'); if (!b) return; const { error } = await sb.rpc('review_payment', { p_payment: b.dataset.id, p_approve: b.dataset.a === '1' }); error ? toast(error.message) : (toast('Updated'), render()); };
   },
   async bookings() { const { data } = await sb.from('rentals').select('*,products(name),profiles(email)').order('created_at', { ascending: false }).limit(200);
-    $('#v').innerHTML = tbl(['Customer', 'Product', 'Total', 'Status', 'Starts', 'Expires'], data.map(r => `<tr><td>${esc(r.profiles?.email)}</td><td>${esc(r.products.name)}</td><td>${money(r.total)}</td><td><span class="st ${r.status}">${r.status}</span></td><td>${when(r.starts_at)}</td><td>${when(r.expires_at)}</td></tr>`)); },
+    $('#v').innerHTML = tbl(['Customer', 'Product', 'Total', 'Status', 'Expires', ''], data.map(r => `<tr><td>${esc(r.profiles?.email)}</td><td>${esc(r.products.name)}</td><td>${money(r.total)}</td><td><span class="st ${r.status}">${r.status}</span></td><td>${when(r.expires_at)}</td><td>${r.status === 'active' ? `<button class="btn sm" data-dl="${r.id}">${r.delivery_note ? 'Edit details' : 'Send details'}</button>` : ''}</td></tr>`));
+    $('#v').onclick = async e => { const b = e.target.closest('[data-dl]'); if (!b) return; const note = prompt('Access details for the customer (account, code, link):'); if (!note) return; const { error } = await sb.rpc('set_delivery', { p_rental: b.dataset.dl, p_note: note }); error ? toast(error.message) : (toast('Sent'), render()); }; },
   async customers() { const { data } = await sb.from('profiles').select('*').order('created_at', { ascending: false }); $('#v').innerHTML = tbl(['Email', 'Role', 'Joined'], data.map(c => `<tr><td>${esc(c.email)}</td><td>${c.role}</td><td>${when(c.created_at)}</td></tr>`)); },
   async products() {
     const { data } = await sb.from('products').select('*,plans(*)').order('created_at', { ascending: false });

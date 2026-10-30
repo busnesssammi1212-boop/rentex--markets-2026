@@ -53,6 +53,7 @@ async function dash() {
   const [r, n] = await Promise.all([sb.from('rentals').select('*,products(name,icon),payments(status,method)').eq('user_id', user.id).order('created_at', { ascending: false }), sb.from('notifications').select('*').order('created_at', { ascending: false }).limit(8)]);
   const d = $('#dashDlg');
   d.innerHTML = `<h2>My rentals</h2><div class="tw"><table><tr><th>Product</th><th>Total</th><th>Status</th><th>Starts</th><th>Expires</th></tr>${(r.data || []).map(x => `<tr><td>${esc(x.products.icon)} ${esc(x.products.name)}</td><td>${money(x.total)}</td><td><span class="st ${x.status}">${x.status}</span></td><td>${when(x.starts_at)}</td><td>${when(x.expires_at)}</td></tr>`).join('') || '<tr><td colspan=5>No rentals yet.</td></tr>'}</table></div>
+  ${(r.data || []).filter(x => x.status === 'active' && x.delivery_note).map(x => `<h3>Access: ${esc(x.products.name)}</h3><p class="note" style="white-space:pre-wrap;user-select:all">${esc(x.delivery_note)}</p>`).join('')}
   <h3>Notifications</h3>${(n.data || []).map(x => `<p class="note">${when(x.created_at)} — ${esc(x.message)}</p>`).join('') || '<p class="note">Nothing new.</p>'}<button class="btn ghost" id="c">Close</button>`;
   $('#c').onclick = () => d.close(); d.open || d.showModal();
 }
