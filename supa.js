@@ -12,3 +12,15 @@ export function particles() {
   (function f() { c.width = innerWidth; c.height = innerHeight; x.fillStyle = 'rgba(160,190,255,.35)';
     P.forEach(p => { p.y -= p.v / 60; if (p.y < 0) p.y = 1; x.beginPath(); x.arc(p.x * c.width, p.y * c.height, p.r, 0, 7); x.fill(); }); requestAnimationFrame(f); })();
 }
+
+// Cloudflare Turnstile (captcha). Paste your PUBLIC site key. Leave as is to keep captcha off.
+export const TS_KEY = 'PASTE-SITE-KEY';
+export const TS_ON = !TS_KEY.startsWith('PASTE');
+let tsLoad;
+export function turnstile(el) {
+  if (!TS_ON) return { token: () => undefined, reset() {} };
+  tsLoad ||= new Promise(r => { const s = document.createElement('script'); s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; s.onload = r; document.head.append(s); });
+  let tok, id;
+  tsLoad.then(() => { id = window.turnstile.render(el, { sitekey: TS_KEY, theme: 'dark', callback: t => tok = t, 'expired-callback': () => tok = undefined }); });
+  return { token: () => tok, reset() { tok = undefined; window.turnstile?.reset(id); } };
+}

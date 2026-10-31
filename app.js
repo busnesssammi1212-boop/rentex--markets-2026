@@ -1,4 +1,4 @@
-import { sb, $, esc, money, when, toast, particles } from './supa.js';
+import { sb, $, esc, money, when, toast, particles, turnstile, TS_ON } from './supa.js';
 import { PAY } from './config.js';
 particles();
 let cats = [], prods = [], cat = 0, user = null;
@@ -44,8 +44,9 @@ function detail(p) {
 function authDlg() {
   const d = $('#authDlg');
   d.innerHTML = `<h2>Log in or sign up</h2><div class="row"><input id="em" type="email" placeholder="Email" autocomplete="email"></div><div class="row"><input id="pw" type="password" placeholder="Password (min 8)" autocomplete="current-password"></div>
-  <div class="row"><button class="btn ghost" id="su">Sign up</button><button class="btn" id="li">Log in</button></div>`;
-  const run = async fn => { const { error } = await sb.auth[fn]({ email: $('#em').value, password: $('#pw').value }); error ? toast(error.message) : (d.close(), toast(fn === 'signUp' ? 'Check your email if confirmation is on.' : 'Welcome back.')); };
+  <div id="ts" style="margin:8px 0"></div><div class="row"><button class="btn ghost" id="su">Sign up</button><button class="btn" id="li">Log in</button></div>`;
+  const cap = turnstile($('#ts'));
+  const run = async fn => { if (TS_ON && !cap.token()) return toast('Please complete the captcha.'); const { error } = await sb.auth[fn]({ email: $('#em').value, password: $('#pw').value, options: { captchaToken: cap.token() } }); if (error) { toast(error.message); cap.reset(); } else { d.close(); toast(fn === 'signUp' ? 'Account created.' : 'Welcome back.'); } };
   $('#li').onclick = () => run('signInWithPassword'); $('#su').onclick = () => run('signUp'); d.showModal();
 }
 async function dash() {

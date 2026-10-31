@@ -1,4 +1,4 @@
-import { sb, $, esc, money, when, toast, particles } from './supa.js';
+import { sb, $, esc, money, when, toast, particles, turnstile, TS_ON } from './supa.js';
 particles();
 let me, tab = 'stats', cats = [];
 const M = $('#main');
@@ -10,8 +10,9 @@ async function boot() {
   cats = (await sb.from('categories').select('*').order('sort')).data; render();
 }
 function login() {
-  M.innerHTML = `<div class="glass" style="padding:24px;max-width:400px"><h2>Staff login</h2><div class="row"><input id="em" type="email" placeholder="Email"></div><div class="row"><input id="pw" type="password" placeholder="Password"></div><button class="btn" id="li">Log in</button></div>`;
-  $('#li').onclick = async () => { const { error } = await sb.auth.signInWithPassword({ email: $('#em').value, password: $('#pw').value }); error ? toast(error.message) : boot(); };
+  M.innerHTML = `<div class="glass" style="padding:24px;max-width:400px"><h2>Staff login</h2><div class="row"><input id="em" type="email" placeholder="Email"></div><div class="row"><input id="pw" type="password" placeholder="Password"></div><div id="ts" style="margin:8px 0"></div><button class="btn" id="li">Log in</button></div>`;
+  const cap = turnstile($('#ts'));
+  $('#li').onclick = async () => { if (TS_ON && !cap.token()) return toast('Please complete the captcha.'); const { error } = await sb.auth.signInWithPassword({ email: $('#em').value, password: $('#pw').value, options: { captchaToken: cap.token() } }); if (error) { toast(error.message); cap.reset(); } else boot(); };
 }
 async function render() {
   const t = ['stats', 'payments', 'bookings', 'products', 'customers'];
