@@ -14,7 +14,7 @@ export function particles() {
 }
 
 // Cloudflare Turnstile (captcha). Paste your PUBLIC site key. Leave as is to keep captcha off.
-export const TS_KEY = 'PASTE-SITE-KEY';
+export const TS_KEY = '0x4AAAAAAFttWChsemnRby6V';
 export const TS_ON = !TS_KEY.startsWith('PASTE');
 let tsLoad;
 export function turnstile(el) {
